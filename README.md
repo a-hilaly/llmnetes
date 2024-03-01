@@ -1,19 +1,26 @@
-# LLMNETES
+# LLM*NETES
 
-A Kubernetes controller that allows users to operate their kubernetes using natural language.
+Bringing LLM's to Kubernetes.
+
+<p align="center">
+<img src="./docs/images/llmnetes-cute-astronaut.jpg" width="250" >
+</p>
+
+Disclaimer: This project is still work in progress and is not ready 
+for production use.
 
 ## Description
 
-llmnetes is a Kubernetes controller that allows users to operate their kubernetes
-cluster using a natural language interface. It is backed by LLM (Language Learning Model)
-which translates natural language commands into kubernetes API calls. It is capable of
-understanding commands like `create a deployment with 3 replicas` or `delete all pods in the default namespace`.
-Or even triggering chaos experiments like `kill a pod in the default namespace`. and much more.
+Introducing LLMNETES, a Kubernetes controller designed to simplify
+cluster management with a natural language interface. Powered by
+Large Language Models (LLM).
 
-llmenetes supports multiple LLM backends. Currently, it supports
-[OpenAI's GPT-3](https://openai.com/blog/openai-api/) and  a local model that is trained on the
-[TODO](TODO) dataset. It is also possible to add your own LLM backend by implementing
-the [LLM interface]().
+Whether it's creating deployments, deleting pods, or triggering chaos
+experiments, LLMNETES understands and tries executes your commands
+efficiently. It currently supports multiple LLM backends, including
+**OpenAI's**  **GPT-3** and a local model trained on a dataset.
+Additionally, users  can integrate their own LLM backend by
+implementing the provided LLM interface.
 
 ## Support table
 
@@ -22,25 +29,21 @@ the [LLM interface]().
 | OpenAI GPT-X | Yes | |
 | llama local model | WIP | |
 
-## Status
-
-It is currently in development and is not ready for production use.
-
 ## Installation
 
 ### Prerequisites
 
-- A Kubernetes cluster with a version >= 1.16.0
+- A Kubernetes cluster
 - [helm](https://helm.sh/docs/intro/install/) installed and configured to access your cluster
 - An OPENAI API key
 
-Modify the `deploy/helm-chart/llmnetes/values.yaml` file to add your OPENAI API key
-and other configuration options. Then, install the helm chart:
-
 ```bash
-$ helm install llmnetes deploy/helm-chart/llmnetes
+helm install --create-namespace \
+    llmnetes oci://ghcr.io/llmnetes/llmnetes \
+    --version "0.0.1" \
+    --set=backned.openai.apiKey=<your-open-ai-key> \
+    --set=backend.customLLM.svc=
 ```
-
 
 ## Examples
 
@@ -49,7 +52,7 @@ $ helm install llmnetes deploy/helm-chart/llmnetes
 To deploy new pods using llmnetes, you can deploy the following manifest:
 
 ```yaml
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+apiVersion: llmnetes.dev/v1alpha1
 kind: Command
 metadata:
   name: my-command
@@ -64,12 +67,12 @@ This will create 3 nginx pods that will serve traffic on port 80.
 llmnetes can also be used to trigger chaos experiments. For example, to kill a pod in the default namespace, you can deploy the following manifest:
 
 ```yaml
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+apiVersion: llmnetes.dev/v1alpha1
 kind: ChaosSimulation
 metadata:
   name: chaos-simulation-cr
 spec:
-  level: 10 # 1 being the lowest and 10 the highest
+  level: 10
   command: break my cluster networking layer (or at least try to)
 ```
 

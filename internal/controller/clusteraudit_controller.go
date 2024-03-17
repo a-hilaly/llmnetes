@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,6 +35,7 @@ import (
 	"github.com/yolo-operator/yolo-operator/pkg/condition"
 	"github.com/yolo-operator/yolo-operator/pkg/k8s"
 	"github.com/yolo-operator/yolo-operator/pkg/model"
+	"github.com/yolo-operator/yolo-operator/pkg/plugin/trivy"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,6 +64,7 @@ type ClusterAuditReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
 func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logger.FromContext(ctx)
+	fmt.Println("ABCDE")
 	log.Info("Reconciling", "resource", req.NamespacedName)
 
 	// First, we fetch the Command object.
@@ -92,6 +95,77 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
+	}
+
+	// json
+	b, _ := json.Marshal(cr.Spec)
+	fmt.Println(string(b))
+
+	if cr.Spec.Type == "" {
+		fmt.Println("Scanning images....")
+		podsClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
+		pods, err := podsClient.List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return reconcile.Result{}, nil
+		}
+
+		images := map[string]string{}
+		for _, pod := range pods.Items {
+			for _, container := range pod.Spec.Containers {
+				images[container.Image] = ""
+			}
+		}
+		results := []string{}
+		fmt.Println("images", images)
+		for image := range images {
+			result, err := trivy.ScanImage(image)
+			if err != nil {
+				fmt.Println("ERROR", err.Error(), result)
+				cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error()+result, "Unable to scan image"))
+				err = r.Status().Update(ctx, &cr)
+				if err != nil {
+					// Temporary error, let's see how this goes.
+					return ctrl.Result{}, err
+				}
+
+				return ctrl.Result{}, nil
+			} else {
+				results = append(results, result)
+			}
+			break
+		}
+
+		var vr trivy.VulnerabilityReport
+
+		err = json.Unmarshal([]byte(results[0]), &vr)
+		if err != nil {
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to unmarshal trivy report"))
+			err = r.Status().Update(ctx, &cr)
+			if err != nil {
+				// Temporary error, let's see how this goes.
+				return ctrl.Result{}, err
+			}
+		}
+
+		output, err := r.Model.RunQuery("I found these CVEs, can you summaries it for me? is there any action to do?:\n" + results[0][0:16000])
+		if err != nil {
+			// instead of returning an error, we update the status of the command
+			// and let the controller decide what to do with it.
+			log.Error(err, "unable to run query")
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to run query"))
+		} else {
+			// Query processed successfully, we can set the output and the condition
+			cr.Status.Output = output
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewSuccessfulCondition("Command processed successfully"))
+		}
+
+		log.Info("Processed", "clusterAudit cve", "", "output", output)
+		err = r.Status().Update(ctx, &cr)
+		if err != nil {
+			// Temporary error, let's see how this goes.
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
 	}
 
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)

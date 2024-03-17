@@ -44,4 +44,13 @@ resources:
   kind: ClusterAudit
   path: github.com/yolo-operator/yolo-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: yolo.ahilaly.dev
+  group: batch
+  kind: CVEScan
+  path: github.com/yolo-operator/yolo-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

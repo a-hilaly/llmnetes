@@ -1,0 +1,12 @@
+apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+kind: CVEScan
+metadata:
+  labels:
+    app.kubernetes.io/name: cvescan
+    app.kubernetes.io/instance: cvescan-sample
+    app.kubernetes.io/part-of: yolo-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: yolo-operator
+  name: cvescan-sample
+spec:
+  # TODO(user): Add fields here

@@ -4,4 +4,5 @@ resources:
 - batch_v1alpha1_commandexec.yaml
 - batch_v1alpha1_chaossimulation.yaml
 - batch_v1alpha1_clusteraudit.yaml
+- batch_v1alpha1_cvescan.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

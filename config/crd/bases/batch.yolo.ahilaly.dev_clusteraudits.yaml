@@ -34,6 +34,8 @@ spec:
           spec:
             description: ClusterAuditSpec defines the desired state of ClusterAudit
             properties:
+              type:
+                type: string
               resources:
                 additionalProperties:
                   properties:

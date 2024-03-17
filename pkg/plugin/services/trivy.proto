@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package trivy;
+
+message ImageScanRequest {
+  string image_ref = 1;
+  TrivyScanOptions options = 2;
+}
+
+message TrivyScanOptions {
+  repeated Severity severity_levels = 1;
+  repeated string extra_args = 2;
+}
+
+enum Severity {
+  UNKNOWN = 0;
+  LOW = 1;
+  MEDIUM = 2;
+  HIGH = 3;
+  CRITICAL = 4;
+}
+
+message ImageScanResponse {
+  repeated Vulnerability vulnerabilities = 1;
+}
+
+message Vulnerability {
+  string package_name = 1;
+  string package_version = 2;
+  string vulnerability_id = 3;
+  Severity severity = 4;
+  string title = 5;
+  map<string, string> metadata = 6;
+}
+
+service TrivyService {
+  rpc ScanImage(ImageScanRequest) returns (ImageScanResponse) {}
+}

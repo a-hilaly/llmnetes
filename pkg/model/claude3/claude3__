@@ -1,0 +1,79 @@
+package openai
+
+import (
+	"fmt"
+	"os"
+
+
+)
+
+const (
+	// responseStyle is the style of the response we expect from the model.
+	// TODO: make this configurable.
+	responseStyle = `. Answer using the following YAML format:
+	yaml file: (if applicable)
+	file name: (if applicable)
+	command to run:
+	explanation:`
+
+	responseStyle2 = `. Answer using the exact following format (reponse with the exact same format as below):
+	YAML file content: COMPLETE HERE
+	File name: COMPLETE HERE
+	Command to deploy the file: COMPLETE HERE
+	Explanation: COMPLETE HERE
+`
+)
+
+type clientWraper struct {
+	client *anthropic.AnthropicClient
+}
+
+func NewClientFromEnv() (*clientWraper, error) {
+	token := os.Getenv("ANTHROPIC_TOKEN")
+	if token == "" {
+		return nil, fmt.Errorf("ANTHROPIC_TOKEN is not set")
+	}
+	c, err := anthropic.New(token, "modules")
+	if err != nil {
+		return nil, err
+	}
+	client := &clientWraper{
+		client: c,
+	}
+	return client, nil
+}
+
+func (c *clientWraper) RunQuery(query string) (string, error) {
+	d, err := c.client.Send(&anthropic.Opts{
+		Message: data.MessageModule{
+			Human: query + responseStyle2,
+		},
+		Sender: anthropic.Sender{MaxToken: 1200},
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return d.Response.String(), nil
+}
+
+func __main() {
+	c, err := anthropic.New("api keys", "modules")
+	if err != nil {
+		panic(err)
+	}
+
+	d, err := c.Send(&anthropic.Opts{
+		Message: data.MessageModule{
+			Human: "Do you know Golang, please answer me in the shortest possible way.",
+		},
+		Sender: anthropic.Sender{MaxToken: 1200},
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(d.Response.String())
+}

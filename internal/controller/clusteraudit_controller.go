@@ -49,9 +49,9 @@ type ClusterAuditReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=batch.yolo.ahilaly.dev,resources=clusteraudits,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=batch.yolo.ahilaly.dev,resources=clusteraudits/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=batch.yolo.ahilaly.dev,resources=clusteraudits/finalizers,verbs=update
+//+kubebuilder:rbac:groups=llmnetes.dev,resources=clusteraudits,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=llmnetes.dev,resources=clusteraudits/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=llmnetes.dev,resources=clusteraudits/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

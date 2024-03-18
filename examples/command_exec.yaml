@@ -1,6 +1,0 @@
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
-kind: CommandExec
-metadata:
-  name: command1
-spec:
-  input: Deploy a CronJob that will delete pod randomly in the cluster every 2hours. 

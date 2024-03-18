@@ -1,4 +1,4 @@
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+apiVersion: llmnetes.dev/v1alpha1
 kind: CommandExec
 metadata:
     name: my-command

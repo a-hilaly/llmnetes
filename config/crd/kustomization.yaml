@@ -2,11 +2,11 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/batch.yolo.ahilaly.dev_commands.yaml
-- bases/batch.yolo.ahilaly.dev_commandexecs.yaml
-- bases/batch.yolo.ahilaly.dev_chaossimulations.yaml
-- bases/batch.yolo.ahilaly.dev_clusteraudits.yaml
-- bases/batch.yolo.ahilaly.dev_cvescans.yaml
+- bases/llmnetes.dev_commands.yaml
+- bases/llmnetes.dev_commandexecs.yaml
+- bases/llmnetes.dev_chaossimulations.yaml
+- bases/llmnetes.dev_clusteraudits.yaml
+#- bases/llmnetes.dev_cvescans.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:

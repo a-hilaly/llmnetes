@@ -1,0 +1,8 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ClusterAudit
+metadata:
+  name: cluster-audit-cr
+spec:
+  resources:
+  - kind: Pods
+  - kind: Services

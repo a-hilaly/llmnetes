@@ -12,7 +12,7 @@ metadata:
   name: chaossimulation-editor-role
 rules:
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - chaossimulations
   verbs:
@@ -24,7 +24,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - chaossimulations/status
   verbs:

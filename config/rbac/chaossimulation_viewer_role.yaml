@@ -12,7 +12,7 @@ metadata:
   name: chaossimulation-viewer-role
 rules:
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - chaossimulations
   verbs:
@@ -20,7 +20,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - chaossimulations/status
   verbs:

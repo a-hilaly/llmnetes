@@ -12,7 +12,7 @@ metadata:
   name: cvescan-viewer-role
 rules:
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - cvescans
   verbs:
@@ -20,7 +20,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - cvescans/status
   verbs:

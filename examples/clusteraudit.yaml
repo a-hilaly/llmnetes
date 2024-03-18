@@ -1,7 +1,7 @@
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+apiVersion: llmenetes.dev/v1alpha1
 kind: ClusterAudit
 metadata:
-  name: cluster-audit-cr
+  name: cluster-audit-services
 spec:
   resources:
   - kind: Pods

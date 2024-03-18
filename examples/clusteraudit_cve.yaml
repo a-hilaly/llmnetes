@@ -1,7 +1,0 @@
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
-kind: ClusterAudit
-metadata:
-  name: cluster-audit-pods-scan-cves-2
-spec:
-  type: ScanImage
-  resources: null

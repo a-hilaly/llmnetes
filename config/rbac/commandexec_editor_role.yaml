@@ -12,7 +12,7 @@ metadata:
   name: commandexec-editor-role
 rules:
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - commandexecs
   verbs:
@@ -24,7 +24,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - batch.yolo.ahilaly.dev
+  - llmnetes.dev
   resources:
   - commandexecs/status
   verbs:

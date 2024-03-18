@@ -87,7 +87,7 @@ func getFullSentence(allOutput []string) (string, error) {
 // writeOutputToKubernetesCommandFile writes the output to a kubernetes command file
 // that can be used to run the command in kubernetes.
 /*
-apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+apiVersion: llmnetes.dev/v1alpha1
 kind: Command
 metadata:
 	name: my-command
@@ -95,7 +95,7 @@ spec:
 	input: INPUT
 */
 func writeOutputToKubernetesCommandFile(filename, input string) error {
-	content := fmt.Sprintf(`apiVersion: batch.yolo.ahilaly.dev/v1alpha1
+	content := fmt.Sprintf(`apiVersion: llmnetes.dev/v1alpha1
 kind: CommandExec
 metadata:
     name: my-command-%s

@@ -1,0 +1,10 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ClusterAudit
+metadata:
+  name: cluster-audit-default
+  namespace: default
+spec:
+  type: classic
+  resources:
+  - Pods
+  - Services

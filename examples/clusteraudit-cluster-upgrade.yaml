@@ -1,0 +1,8 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ClusterAudit
+metadata:
+  name: cluster-audit-cluster-upgrade
+spec:
+  type: ClusterUpgradeCheck
+  resources:
+  - APIResources

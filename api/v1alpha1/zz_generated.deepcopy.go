@@ -185,6 +185,17 @@ func (in *ClusterAuditSpec) DeepCopyInto(out *ClusterAuditSpec) {
 	*out = *in
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
+	if in.Targets != nil {
+		in, out := &in.Targets, &out.Targets
 		*out = make(map[string]*ResourceTarget, len(*in))
 		for key, val := range *in {
 			var outVal *ResourceTarget

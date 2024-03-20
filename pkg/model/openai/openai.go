@@ -66,3 +66,27 @@ func (c *clientWraper) RunQuery(query string) (string, error) {
 	// We pick the first choice, which is the most likely one.
 	return resp.Choices[0].Message.Content, nil
 }
+
+func (c *clientWraper) RunQueryAudit1(query string) (string, error) {
+	fmt.Println("Running query")
+	resp, err := c.client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: query,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		fmt.Printf("ChatCompletion error: %v\n", err)
+		return "", err
+	}
+
+	// We pick the first choice, which is the most likely one.
+	return resp.Choices[0].Message.Content, nil
+}

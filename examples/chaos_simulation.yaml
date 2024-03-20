@@ -1,0 +1,9 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ChaosSimulation
+metadata:
+  name: chaos-simulation-cr
+spec: {}
+
+
+
+

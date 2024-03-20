@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -59,7 +60,11 @@ func main() {
 		fmt.Println("error getting the full sentence: ", err)
 		return
 	}
-	_ = writeOutputToKubernetesCommandFile(myAudioInputFile, s)
+	err = writeOutputToKubernetesCommandFile(myAudioInputFile, s)
+	if err != nil {
+		fmt.Println("error writing the output to kubernetes command file: ", err)
+		return
+	}
 
 	kubectlCmd := exec.Command("kubectl", "apply", "-f", myAudioInputFile)
 	kubectlCmd.Stdout = os.Stdout
@@ -74,13 +79,29 @@ func main() {
 func getFullSentence(allOutput []string) (string, error) {
 	// traverse the array in reverse order and find the first
 	// element that matches the last element.
+	firstElement := allOutput[0]
+	for i := len(allOutput) - 2; i >= 0; i-- {
+		if allOutput[i] == firstElement {
+			return strings.Join(allOutput[i+1:], " ") + ".", nil
+		}
+	}
+	fmt.Println(allOutput)
+	return fmt.Sprintf("ERROR: %+v", allOutput), fmt.Errorf("could not find the last element")
+	return "ERROR", fmt.Errorf("could not find the last element")
+}
+
+func getFullSentence2(allOutput []string) (string, error) {
+	// traverse the array in reverse order and find the first
+	// element that matches the last element.
 	lastElement := allOutput[len(allOutput)-1]
 	for i := len(allOutput) - 2; i >= 0; i-- {
 		if allOutput[i] == lastElement {
 			return strings.Join(allOutput[i+1:], " ") + ".", nil
 		}
 	}
+	fmt.Println(allOutput)
 	fmt.Println(lastElement)
+	return fmt.Sprintf("%+v", allOutput), fmt.Errorf("could not find the last element")
 	return "ERROR", fmt.Errorf("could not find the last element")
 }
 
@@ -98,18 +119,17 @@ func writeOutputToKubernetesCommandFile(filename, input string) error {
 	content := fmt.Sprintf(`apiVersion: llmnetes.dev/v1alpha1
 kind: CommandExec
 metadata:
-    name: my-command-%s
+  name: my-command-%s
 spec:
-    input: %s`, randomString(5), input)
+  input: %s`, randomString(5), input)
 	return os.WriteFile(filename, []byte(content), 0644)
 }
 
-func randomString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyz" +
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, length)
+func randomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
 	for i := range b {
-		b[i] = charset[0]
+		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
 }

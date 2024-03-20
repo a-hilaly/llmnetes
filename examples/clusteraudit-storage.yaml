@@ -1,0 +1,10 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ClusterAudit
+metadata:
+  name: cluster-audit-storage
+  namespace: default
+spec:
+  type: Storage
+  resources:
+  - PersistentVolumes
+  - PersistentVolumeClaims

@@ -1,8 +1,0 @@
-apiVersion: llmenetes.dev/v1alpha1
-kind: ClusterAudit
-metadata:
-  name: cluster-audit-services
-spec:
-  resources:
-  - kind: Pods
-  - kind: Services

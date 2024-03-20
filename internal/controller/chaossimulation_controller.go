@@ -79,8 +79,7 @@ func (r *ChaosSimulationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	executeOutput := false
 	// We process the command
-	input := "Give me a configuration that will simulate a chaos experiement. On a scale" +
-		"from 1 to 10 where 1 is a small experiment and 10 is a large experiment, I want a " + chaosCR.Spec.Level + "."
+	input := "Give me a cronjob that will simulate a chaos experiement. For example cronjob to randomly delete pods or services etc... On a scale"
 	log.Info("Processing step", "chaosCR", input)
 	output, err := r.Model.RunQuery(input)
 	if err != nil {

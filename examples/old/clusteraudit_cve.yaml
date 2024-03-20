@@ -4,4 +4,3 @@ metadata:
   name: cluster-audit-pods-scan-cves-2
 spec:
   type: ScanImage
-  resources: null

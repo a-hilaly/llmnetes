@@ -95,6 +95,8 @@ func ParseGPT3Response(input string) (*GPT3Response, error) {
 	commandToRunContent := input[CommandToRunTokenIndex+len(CommandToRunToken) : ExplanationTokenIndex]
 	explanationContent := input[ExplanationTokenIndex+len(ExplanationToken):]
 
+	yamlFileContent = strings.ReplaceAll(yamlFileContent, "batch/v1beta1", "batch/v1")
+
 	return &GPT3Response{
 		YamlFile:     yamlFileContent,
 		FileName:     fileNameContent,
@@ -124,4 +126,5 @@ func (resp *GPT3Response) Sanitize() {
 	resp.CommandToRun = strings.ReplaceAll(resp.CommandToRun, "```bash\n", "")
 	resp.CommandToRun = strings.ReplaceAll(resp.CommandToRun, "```", "")
 	resp.CommandToRun = strings.ReplaceAll(resp.CommandToRun, "\n", "")
+	resp.CommandToRun = strings.ReplaceAll(resp.CommandToRun, "batch/v1beta1", "batch/v1")
 }

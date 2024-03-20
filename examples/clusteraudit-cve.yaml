@@ -1,0 +1,9 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: ClusterAudit
+metadata:
+  name: cluster-audit-cve
+spec:
+  type: ScanImages
+  resources:
+  - Pods
+  - Deployments

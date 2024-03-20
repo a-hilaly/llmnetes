@@ -1,0 +1,6 @@
+apiVersion: llmnetes.dev/v1alpha1
+kind: CommandExec
+metadata:
+  name: my-command-aaaaa
+spec:
+  input: my name is Amin and I am here to play with you.

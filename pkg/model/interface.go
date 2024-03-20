@@ -5,4 +5,5 @@ package model
 // TODO: add more relevant methods.
 type K8SLLM interface {
 	RunQuery(string) (string, error)
+	RunQueryAudit1(string) (string, error)
 }

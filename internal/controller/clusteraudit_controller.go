@@ -38,6 +38,7 @@ import (
 	"github.com/yolo-operator/yolo-operator/pkg/plugin/trivy"
 
 	apiv1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -101,7 +102,7 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	b, _ := json.Marshal(cr.Spec)
 	fmt.Println(string(b))
 
-	if cr.Spec.Type == "" {
+	if cr.Spec.Type == "ScanImages" {
 		fmt.Println("Scanning images....")
 		podsClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
 		pods, err := podsClient.List(ctx, metav1.ListOptions{})
@@ -127,7 +128,6 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 					// Temporary error, let's see how this goes.
 					return ctrl.Result{}, err
 				}
-
 				return ctrl.Result{}, nil
 			} else {
 				results = append(results, result)
@@ -135,19 +135,21 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			break
 		}
 
-		var vr trivy.VulnerabilityReport
+		fmt.Println("reports size", len(results))
+		// var vr trivy.VulnerabilityReport
 
-		err = json.Unmarshal([]byte(results[0]), &vr)
-		if err != nil {
-			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to unmarshal trivy report"))
-			err = r.Status().Update(ctx, &cr)
-			if err != nil {
-				// Temporary error, let's see how this goes.
-				return ctrl.Result{}, err
-			}
-		}
+		/* 		err = json.Unmarshal([]byte(results[0]), &vr)
+		   		fmt.Println("+++", results[0])
+		   		if err != nil {
+		   			//cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to unmarshal report"))
+		   			err = r.Status().Update(ctx, &cr)
+		   			if err != nil {
+		   				// Temporary error, let's see how this goes.
+		   				return ctrl.Result{}, err
+		   			}
+		   		} */
 
-		output, err := r.Model.RunQuery("I found these CVEs, can you summaries it for me? is there any action to do?:\n" + results[0][0:16000])
+		output, err := r.Model.RunQueryAudit1("I found these CVEs, can you summaries it for me? is there any action to do?:\n" + results[0][0:16000])
 		if err != nil {
 			// instead of returning an error, we update the status of the command
 			// and let the controller decide what to do with it.
@@ -167,6 +169,115 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 		return ctrl.Result{}, nil
 	}
+	if cr.Spec.Type == "Storage" {
+		fmt.Println("Storage....")
+		pvs, err := clientset.CoreV1().PersistentVolumes().List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return reconcile.Result{}, nil
+		}
+
+		pvcs, err := clientset.CoreV1().PersistentVolumeClaims(apiv1.NamespaceDefault).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return reconcile.Result{}, nil
+		}
+
+		podsB, _ := json.Marshal(pvs)
+		deploysB, _ := json.Marshal(pvcs)
+
+		input := "Can you look at the current PersistentVolumes and PVC and tell me if there is a problem? if there is one what's the problem and how can I solve it it? keep it brief:"
+		input += string(podsB) + "\n---\n" + "\n---\n" + string(deploysB)
+
+		if len(input) > 4096 {
+			input = input[0:4097]
+		}
+		// We process the command
+		log.Info("Processing", "command", input)
+		output, err := r.Model.RunQueryAudit1(input)
+		if err != nil {
+			// instead of returning an error, we update the status of the command
+			// and let the controller decide what to do with it.
+			log.Error(err, "unable to run query")
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to run query"))
+		} else {
+			// Query processed successfully, we can set the output and the condition
+			cr.Status.Output = output
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewSuccessfulCondition("Command processed successfully"))
+		}
+
+		log.Info("Processed", "clusterAudit", input, "output", output)
+		err = r.Status().Update(ctx, &cr)
+		if err != nil {
+			// Temporary error, let's see how this goes.
+			return ctrl.Result{}, err
+		}
+
+		return ctrl.Result{}, nil
+	}
+	if cr.Spec.Type == "ClusterUpgradeCheck" {
+		fmt.Println("ClusterUpgradeCheck....")
+
+		serverVersion, err := clientset.ServerVersion()
+		if err != nil {
+			panic(err.Error())
+		}
+
+		fmt.Printf("Server Version: %s\n", serverVersion.String())
+		// Retrieve API resources
+		apiResourceList, err := clientset.ServerPreferredResources()
+		if err != nil {
+			panic(err.Error())
+		}
+
+		var input string
+		if cr.Spec.CustomInput != "" {
+			input = cr.Spec.CustomInput + ". Given the current API resources and their versions:"
+		} else {
+			fmt.Println(serverVersion)
+			input = "In brief, Yes or no then explain. According to your knowledge." +
+				"Can I upgrade my cluster to v1.28 of Kubernetes? Given the current API Server version is" + serverVersion.String() + ", " +
+				"and given the current API resources:"
+		}
+
+		serverResources, _ := json.Marshal(apiResourceList)
+		input = input + "\n" + string(serverResources)
+
+		input = input + "\n---\n" + `
+Here is some information about what versions are removed in each version:
+- The batch/v1beta1 API version of CronJob is no longer served as of v1.25.
+- flowcontrol.apiserver.k8s.io/v1beta1 API version is no longer served as of v1.29.
+- Otherwise no deprecations are known.
+
+Only say no if an API is removed in the next version. Otherwise, say yes.
+`
+
+		input = input + "\n---" + "Current server version is" + serverVersion.String()
+
+		if len(input) > 4096 {
+			input = input[0:4097]
+		}
+		// We process the command
+		log.Info("Processing", "command", "...")
+		output, err := r.Model.RunQueryAudit1(input)
+		if err != nil {
+			// instead of returning an error, we update the status of the command
+			// and let the controller decide what to do with it.
+			log.Error(err, "unable to run query")
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewFailedCondition(err.Error(), "Unable to run query"))
+		} else {
+			// Query processed successfully, we can set the output and the condition
+			cr.Status.Output = output
+			cr.Status.Conditions = append(cr.Status.Conditions, condition.NewSuccessfulCondition("Command processed successfully"))
+		}
+
+		log.Info("Processed", "clusterAudit", input, "output", output)
+		err = r.Status().Update(ctx, &cr)
+		if err != nil {
+			// Temporary error, let's see how this goes.
+			return ctrl.Result{}, err
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 	podsClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
@@ -183,13 +294,15 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	podsB, _ := json.Marshal(pods)
 	deploysB, _ := json.Marshal(deployments)
 
-	input := "Can you look at the current pods and deployments and tell me what's the problem and how can I solve it it?:"
-	input += string(podsB) + "\n---\n" + string(deploysB)
+	input := "Can you look at the current pods and deployments and tell me if there is a problem? if there is one what's the problem and how can I solve it it? keep it brief:"
+	input += string(podsB) + "\n---\n" + "\n---\n" + string(deploysB)
 
-	input = input[0:4097]
+	if len(input) > 4096 {
+		input = input[0:4097]
+	}
 	// We process the command
 	log.Info("Processing", "command", input)
-	output, err := r.Model.RunQuery(input)
+	output, err := r.Model.RunQueryAudit1(input)
 	if err != nil {
 		// instead of returning an error, we update the status of the command
 		// and let the controller decide what to do with it.
@@ -216,4 +329,17 @@ func (r *ClusterAuditReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&batchv1alpha1.ClusterAudit{}).
 		Complete(r)
+}
+
+func newAPIExtensionsClientSet() (*apiextensionsv1.ApiextensionsV1Client, error) {
+	config, err := clientcmd.BuildConfigFromFlags("", "/Users/hilalymh/.kube/config")
+	if err != nil {
+		return nil, err
+
+	}
+	clientset, err := apiextensionsv1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return clientset, nil
 }

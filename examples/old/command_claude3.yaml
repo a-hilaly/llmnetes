@@ -3,6 +3,6 @@ kind: Command
 metadata:
   name: my-command
   annotations:
-    yolo.ahilaly.dev/llm-backend: "claude3" # open api
+    llmnetes.dev/backend: "claude3"
 spec:
-  input: Create 3 nginx pods that will serve traffic on port 80.xw
+  input: Create 3 nginx pods that will serve traffic on port 80

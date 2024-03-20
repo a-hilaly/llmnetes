@@ -33,11 +33,14 @@ type ResourceTarget struct {
 // ClusterAuditSpec defines the desired state of ClusterAudit
 type ClusterAuditSpec struct {
 	// Type is the type of audit to perform
-	Type string // ClusterUpgrade | CVEChecks | ClusterAudit | ClusterBackup | ClusterRestore | ClusterUpgradeRollback | ClusterUpgradeRollback
-	Key  string
+	// ClusterUpgrade | CVEChecks | ClusterAudit | ClusterBackup | ClusterRestore | ClusterUpgradeRollback | ClusterUpgradeRollback
+	Type string `json:"type,omitempty"`
 	// +optional
-	// Foo is an example field of ClusterAudit. Edit clusteraudit_types.go to remove/update
-	Resources map[string]*ResourceTarget `json:"resources,omitempty"`
+	Resources []*string `json:"resources,omitempty"`
+	// +optional
+	Targets map[string]*ResourceTarget `json:"targets,omitempty"`
+
+	CustomInput string `json:"customInput,omitempty"`
 }
 
 // ClusterAuditStatus defines the observed state of ClusterAudit

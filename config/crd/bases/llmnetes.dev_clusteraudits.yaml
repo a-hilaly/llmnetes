@@ -39,7 +39,13 @@ spec:
           spec:
             description: ClusterAuditSpec defines the desired state of ClusterAudit
             properties:
+              customInput:
+                type: string
               resources:
+                items:
+                  type: string
+                type: array
+              targets:
                 additionalProperties:
                   properties:
                     apiVersion:
@@ -49,9 +55,12 @@ spec:
                     name:
                       type: string
                   type: object
-                description: Foo is an example field of ClusterAudit. Edit clusteraudit_types.go
-                  to remove/update
                 type: object
+              type:
+                description: |-
+                  Type is the type of audit to perform
+                  ClusterUpgrade | CVEChecks | ClusterAudit | ClusterBackup | ClusterRestore | ClusterUpgradeRollback | ClusterUpgradeRollback
+                type: string
             type: object
           status:
             description: ClusterAuditStatus defines the observed state of ClusterAudit

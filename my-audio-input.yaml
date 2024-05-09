@@ -1,6 +1,9 @@
 apiVersion: llmnetes.dev/v1alpha1
-kind: CommandExec
+kind: ClusterAudit
 metadata:
-  name: my-command-aaaaa
+  name: my-audit-auopf
 spec:
-  input: my name is Amin and I am here to play with you.
+  type: ClusterUpgradeCheck
+  resources:
+  - APIResources
+  customInput: Can I upgrade to the next version.

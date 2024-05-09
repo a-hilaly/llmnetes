@@ -230,11 +230,13 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 
 		var input string
 		if cr.Spec.CustomInput != "" {
-			input = cr.Spec.CustomInput + ". Given the current API resources and their versions:"
+			input = cr.Spec.CustomInput + "In brief, Yes or no then explain. According to your knowledge." +
+				"Can I upgrade my cluster to v1.28 of Kubernetes? Will my resources break? Don't care about server, just care about API resources. Given the current API Server version is" + serverVersion.String() + ", " +
+				"and given the current API resources:"
 		} else {
 			fmt.Println(serverVersion)
 			input = "In brief, Yes or no then explain. According to your knowledge." +
-				"Can I upgrade my cluster to v1.28 of Kubernetes? Given the current API Server version is" + serverVersion.String() + ", " +
+				"Can I upgrade my apiserver to v1.28 of Kubernetes? Given the current API Server version is" + serverVersion.String() + ", " +
 				"and given the current API resources:"
 		}
 
@@ -245,9 +247,10 @@ func (r *ClusterAuditReconciler) Reconcile(ctx context.Context, req ctrl.Request
 Here is some information about what versions are removed in each version:
 - The batch/v1beta1 API version of CronJob is no longer served as of v1.25.
 - flowcontrol.apiserver.k8s.io/v1beta1 API version is no longer served as of v1.29.
-- Otherwise no deprecations are known.
+- Otherwise no deprecations are known from 1.27 to 1.28 and 1.28 to 1.29.
 
 Only say no if an API is removed in the next version. Otherwise, say yes.
+Only check the API Resources, assume that i know very well what needs to be upgraded. Your mission is to tell me whether my resources are going to break or not - i'm not talking about server and nodes, just other resources.
 `
 
 		input = input + "\n---" + "Current server version is" + serverVersion.String()
